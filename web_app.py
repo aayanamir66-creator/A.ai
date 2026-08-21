@@ -2,8 +2,15 @@ import os
 import streamlit as st
 from groq import Groq
 
-# Browser page layout details
-st.set_page_config(page_title="A.ai - Intelligence Engine", page_icon="🤖")
+# 1. This hidden block forces Google's web crawlers to read your exact name
+st.set_page_config(page_title="A.ai", page_icon="🤖")
+
+# Custom HTML injected directly so Google indexes the text "A.ai" and "Aayan" perfectly
+st.markdown("""
+    <meta name="description" content="A.ai is an all-knowing, highly intelligent general knowledge assistant developed by Aayan.">
+    <meta name="keywords" content="A.ai, A.ai assistant, Aayan AI, A.ai app, A.ai Google Search">
+""", unsafe_allow_html=True)
+
 st.title("🤖 A.ai")
 st.write("Welcome to your custom general knowledge intelligence engine.")
 
@@ -34,7 +41,6 @@ if user_query := st.chat_input("Ask A.ai anything..."):
     with st.chat_message("assistant"):
         with st.spinner("A.ai is formulating response..."):
             try:
-                # Forces the AI to know you made it and keeps responses clean
                 system_message = (
                     "Your name is A.ai. You are an all-knowing, highly intelligent assistant. "
                     "You were created and developed by Aayan. If anyone asks who made you, "
@@ -52,7 +58,6 @@ if user_query := st.chat_input("Ask A.ai anything..."):
                     temperature=0.3
                 )
                 
-                # Safe object string unpacking strategy to handle your account's exact format
                 try:
                     if hasattr(completion, 'choices') and len(completion.choices) > 0:
                         choice = completion.choices[0]
@@ -65,7 +70,6 @@ if user_query := st.chat_input("Ask A.ai anything..."):
                     elif isinstance(completion, dict) and 'choices' in completion:
                         ai_response = completion['choices'][0]['message']['content']
                     else:
-                        # Raw object string extraction
                         raw_str = str(completion)
                         if "content='" in raw_str:
                             ai_response = raw_str.split("content='")[1].split("', role=")[0]
@@ -76,10 +80,8 @@ if user_query := st.chat_input("Ask A.ai anything..."):
                 except Exception:
                     ai_response = str(completion)
                 
-                # Clean up any raw formatting artifacts like escaped newlines
-                ai_response = ai_response.replace('\\n', '\n').replace('\\\"', '"').strip()
+                ai_response = ai_response.replace('\\n', '\n').replace('\\"', '"').strip()
                 
-                # Strip out any open-weights reasoning data if present
                 if "</think>" in ai_response:
                     ai_response = ai_response.split("</think>")[-1].strip()
 
