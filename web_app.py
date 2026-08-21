@@ -11,7 +11,7 @@ st.write("Welcome to your custom general knowledge intelligence engine.")
 if "GROQ_API_KEY" in os.environ:
     client = Groq()
 else:
-    st.error("GROQ_API_KEY environment variable missing! Please set it in CMD.")
+    st.error("GROQ_API_KEY environment variable missing! Please set it in settings.")
     st.stop()
 
 # Initialize dynamic screen message chat history memory
@@ -34,7 +34,12 @@ if user_query := st.chat_input("Ask A.ai anything..."):
     with st.chat_message("assistant"):
         with st.spinner("A.ai is formulating response..."):
             try:
-                system_message = "Your name is A.ai. You are an all-knowing, highly intelligent assistant."
+                # Forces the AI to know you made it and keeps responses clean
+                system_message = (
+                    "Your name is A.ai. You are an all-knowing, highly intelligent assistant. "
+                    "You were created and developed by Aayan. If anyone asks who made you, "
+                    "you must answer proudly that Aayan made you."
+                )
                 
                 # Setup context with active chat history
                 api_messages = [{"role": "system", "content": system_message}]
@@ -47,13 +52,34 @@ if user_query := st.chat_input("Ask A.ai anything..."):
                     temperature=0.3
                 )
                 
-                # Fetch text string from API object safely
+                # Safe object string unpacking strategy to handle your account's exact format
                 try:
-                    ai_response = completion.choices.message.content
+                    if hasattr(completion, 'choices') and len(completion.choices) > 0:
+                        choice = completion.choices[0]
+                        if hasattr(choice, 'message') and hasattr(choice.message, 'content'):
+                            ai_response = choice.message.content
+                        elif isinstance(choice, dict) and 'message' in choice:
+                            ai_response = choice['message'].get('content', str(choice))
+                        else:
+                            ai_response = getattr(choice, 'text', str(choice))
+                    elif isinstance(completion, dict) and 'choices' in completion:
+                        ai_response = completion['choices'][0]['message']['content']
+                    else:
+                        # Raw object string extraction
+                        raw_str = str(completion)
+                        if "content='" in raw_str:
+                            ai_response = raw_str.split("content='")[1].split("', role=")[0]
+                        elif 'content="' in raw_str:
+                            ai_response = raw_str.split('content="')[1].split('", role=')[0]
+                        else:
+                            ai_response = raw_str
                 except Exception:
                     ai_response = str(completion)
                 
-                # Clean up open-weights raw thinking tokens if present
+                # Clean up any raw formatting artifacts like escaped newlines
+                ai_response = ai_response.replace('\\n', '\n').replace('\\\"', '"').strip()
+                
+                # Strip out any open-weights reasoning data if present
                 if "</think>" in ai_response:
                     ai_response = ai_response.split("</think>")[-1].strip()
 
