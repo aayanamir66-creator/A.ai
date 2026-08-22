@@ -1,134 +1,81 @@
 import os
 import streamlit as st
-import requests
-import base64
+from groq import Groq
 
-# 1. Clear Tab title configuration setup
-st.set_page_config(page_title="A.ai", page_icon="🤖", layout="centered")
+# 1. Title aur Page configuration setup
+st.set_page_config(page_title="A.ai", page_icon="🤖")
 
-st.markdown("""
-    <meta name="description" content="A.ai is an advanced intelligence engine developed by Aayan.">
-    <meta name="keywords" content="A.ai, Aayan AI, A.ai Pro, Image AI">
-""", unsafe_allow_html=True)
-
-# 2. Main Title Interface Header
 st.title("🤖 A.ai Intelligence System")
-st.write("Developed by Aayan • Armed with Global News, Multi-Modal Vision & Pro Memory.")
+st.write("Developed by Aayan • Simple Text Mode Active with Forever Memory.")
 
-# 3. Sidebar UI Panel for Tier Control
-with st.sidebar:
-    st.header("⚙️ System Control Panel")
-    
-    # Dynamic Version Switcher Toggle
-    ai_tier = st.radio("Select App Mode Profile:", ["A.ai Normal Version", "A.ai Pro Version"])
-    
-    if ai_tier == "A.ai Pro Version":
-        st.success("👑 PRO MODE ACTIVE: Forever memory enabled.")
-    else:
-        st.info("STANDARD MODE ACTIVE: Clean session-based standard profile.")
+# 2. Groq Client Connection Safely
+if "GROQ_API_KEY" in os.environ:
+    client = Groq()
+else:
+    client = Groq(api_key="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")
 
-    st.markdown("---")
-    if st.button("🧹 Clear Chat History"):
-        st.session_state.messages = []
-        st.rerun()
-
-# 5. Initialize Memory Storage States
+# 3. Chat History aur Hamesha Yaad Rakhne Waali Memory System
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Display prior chat items sequentially inside the viewport canvas
+# Purani saari baatein screen par dikhane ke liye
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# Photo Upload Interface Component
-uploaded_photo = st.file_uploader("📷 Add a photo for A.ai to analyze:", type=["png", "jpg", "jpeg"])
-
-if uploaded_photo:
-    st.image(uploaded_photo, caption="Uploaded Photo Target", use_container_width=True)
-
-# 6. Main Dynamic Context Interaction Pipeline Execution
+# 4. Sirf Sawal Aur Jawab Waala Input Box
 if user_query := st.chat_input("Ask A.ai anything..."):
+    # User ka sawal memory aur screen par save karein
     st.session_state.messages.append({"role": "user", "content": user_query})
     with st.chat_message("user"):
         st.markdown(user_query)
 
+    # AI ka jawab process karein
     with st.chat_message("assistant"):
-        with st.spinner("A.ai is processing data engines..."):
+        with st.spinner("A.ai is thinking..."):
             try:
+                # Persona Prompt text
                 system_message = (
                     "Your name is A.ai. You are an all-knowing, highly intelligent general assistant. "
-                    "You were created and developed by Aayan. If asked who made you, reply proudly that Aayan made you. "
-                    "You have access to 2026 data arrays and active real-time contextual awareness parameters."
+                    "You were created and developed by Aayan. If asked who made you, reply proudly that Aayan made you."
                 )
                 
-                # Real-Time World Data Ingestion System
-                temporal_context = ""
-                news_keywords = ["news", "today", "current", "latest", "stock", "weather", "happened", "score", "match", "2026"]
-                if any(keyword in user_query.lower() for keyword in news_keywords):
-                    temporal_context = (
-                        "\n[Real-Time Server Notice: The current date environment parameters are active for Saturday, August 22, 2026. "
-                        "Synthesize world knowledge accurately incorporating current global events and updates for August 2026.]"
-                    )
+                # Latest News context (Forces active 2026 updates)
+                temporal_context = (
+                    "\n[Real-Time Server Notice: The current date environment parameters are active for Saturday, August 22, 2026. "
+                    "Synthesize world knowledge accurately incorporating current global events and updates for August 2026.]"
+                )
 
-                # Format messages history if Pro Tier is active
-                context_history = ""
-                if ai_tier == "A.ai Pro Version":
-                    for msg in st.session_state.messages[:-1]:
-                        context_history += f"\n{msg['role']}: {msg['content']}"
+                # Saari purani baatein (Forever Memory) model ko bhejna
+                api_messages = [{"role": "system", "content": system_message + temporal_context}]
+                for msg in st.session_state.messages:
+                    api_messages.append({"role": msg["role"], "content": msg["content"]})
 
-                full_prompt_string = f"{system_message}{temporal_context}\nHistory Context:{context_history}\nUser: {user_query}"
-
-                # Direct rock-solid payload format for Google Gemini 1.5 Flash production servers
-                api_url = "https://googleapis.com"
+                # Rock-solid stable text model endpoint call
+                completion = client.chat.completions.create(
+                    model="qwen/qwen3.6-27b",
+                    messages=api_messages,
+                    temperature=0.3
+                )
                 
-                # Decoded access key string bypasses automated repository blocking patterns
-                api_key = base64.b64decode("QUl6YVN5RHVLVWlHVDFlX1N3UjUzXzF4N3ZfLWN1WHZ1aEpTUXdr").decode("utf-8")
-                
-                if uploaded_photo:
-                    bytes_data = uploaded_photo.getvalue()
-                    base64_image = base64.b64encode(bytes_data).decode("utf-8")
-                    mime_type = uploaded_photo.type
-                    
-                    payload = {
-                        "contents": [{
-                            "parts": [
-                                {"text": full_prompt_string},
-                                {
-                                    "inlineData": {
-                                        "mimeType": mime_type,
-                                        "data": base64_image
-                                    }
-                                }
-                            ]
-                        }]
-                    }
-                else:
-                    payload = {
-                        "contents": [{
-                            "parts": [{"text": full_prompt_string}]
-                        }]
-                    }
-
-                # Secure direct communication handshake
-                response = requests.post(f"{api_url}?key={api_key}", json=payload, timeout=30)
-                response_data = response.json()
-
-                # Safe response harvesting with nested array extraction safeguards
-                if "candidates" in response_data and len(response_data["candidates"]) > 0:
-                    candidate = response_data["candidates"][0]
-                    if "content" in candidate and "parts" in candidate["content"] and len(candidate["content"]["parts"]) > 0:
-                        ai_response = candidate["content"]["parts"][0]["text"]
+                # Extraction logic for your account format
+                try:
+                    ai_response = completion.choices.message.content
+                except (TypeError, AttributeError, KeyError):
+                    if isinstance(completion, dict):
+                        ai_response = completion.get('choices', [{}]).get('message', {}).get('content', str(completion))
+                    elif hasattr(completion, 'choices') and isinstance(completion.choices, list):
+                        ai_response = completion.choices.message.content if hasattr(completion.choices, 'message') else str(completion.choices)
                     else:
-                        ai_response = f"Could not extract text parts. Data structure received: {response_data}"
-                else:
-                    ai_response = f"System Processing Notice: Unable to extract reply. Error details: {response_data}"
-
+                        ai_response = str(completion)
+                
+                # Cleanup raw tags
                 if "</think>" in ai_response:
                     ai_response = ai_response.split("</think>")[-1].strip()
                 
                 ai_response = ai_response.replace('\\n', '\n').replace('\\"', '"').strip()
 
+                # Screen par display karein aur memory mein daal dein
                 st.markdown(ai_response)
                 st.session_state.messages.append({"role": "assistant", "content": ai_response})
                 
