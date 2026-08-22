@@ -6,7 +6,7 @@ from groq import Groq
 st.set_page_config(page_title="A.ai", page_icon="🤖")
 
 st.title("🤖 A.ai Intelligence System")
-st.write("Developed by Aayan • Advanced artificial intelligence for you.")
+st.write("Developed by Aayan • Advanced ChatGPT-Style Engine Active.")
 
 # 2. Initialize Groq API Client Connection Safely
 if "GROQ_API_KEY" in os.environ:
@@ -62,41 +62,36 @@ if user_query := st.chat_input("Ask A.ai anything..."):
                     temperature=0.4
                 )
                 
-                # Extract text data accurately from the received server response block
+                # Extract text data safely and convert it to a robust string to prevent parsing list split failures
+                ai_response = ""
                 try:
-                    ai_response = completion.choices.message.content
-                except (TypeError, AttributeError, KeyError):
-                    if isinstance(completion, dict):
-                        ai_response = completion.get('choices', [{}]).get('message', {}).get('content', str(completion))
-                    elif hasattr(completion, 'choices') and isinstance(completion.choices, list):
-                        ai_response = completion.choices.message.content if hasattr(completion.choices, 'message') else str(completion.choices)
+                    if hasattr(completion, 'choices') and len(completion.choices) > 0:
+                        choice = completion.choices[0]
+                        if hasattr(choice, 'message') and hasattr(choice.message, 'content'):
+                            ai_response = str(choice.message.content)
+                        else:
+                            ai_response = str(choice)
                     else:
                         ai_response = str(completion)
-                
-                # Robust extraction filter block that cleanly chops off the raw object trailing metadata string strings
-                if ", role='assistant'" in ai_response:
-                    ai_response = ai_response.split(", role='assistant'")
-                if "', role=" in ai_response:
-                    ai_response = ai_response.split("', role=")
-                if '", role=' in ai_response:
-                    ai_response = ai_response.split('", role=')
-                if "content='" in ai_response:
-                    ai_response = ai_response.split("content='")[-1]
-                if 'content="' in ai_response:
-                    ai_response = ai_response.split('content="')[-1]
-                if "[Choice(finish_reason=" in ai_response:
-                    ai_response = ai_response.split("[Choice(finish_reason=")
+                except Exception:
+                    ai_response = str(completion)
 
-                # Strip trailing syntax variables or punctuation artifacts safely
-                ai_response = ai_response.strip().rstrip("',").rstrip('",').strip()
-                
-                # ADVANCED CLEANER: Completely wipes out the raw <think> tags and everything inside them
+                # ADVANCED CLEANER: Wipes out raw thinking layers cleanly without using listing breaks
                 if "</think>" in ai_response:
                     ai_response = ai_response.split("</think>")[-1].strip()
                 elif "<think>" in ai_response:
                     ai_response = ai_response.split("<think>")[0].strip()
-                
+
+                # Clean up raw dictionary object artifact strings if they bleed into text outputs
+                metadata_markers = [", role='assistant'", "', role=", '", role=', "content='", 'content="', "[Choice(finish_reason="]
+                for marker in metadata_markers:
+                    if marker in ai_response:
+                        parts = ai_response.split(marker)
+                        ai_response = parts[-1] if "content" in marker else parts[0]
+
+                # Strip trailing syntax brackets, quotation marks, or escaped newlines safely
                 ai_response = ai_response.replace('\\n', '\n').replace('\\"', '"').strip()
+                ai_response = ai_response.strip().rstrip("',").rstrip('",').rstrip(")]").strip()
 
                 # Render the final beautiful text and log it into tracking memory state arrays
                 st.markdown(ai_response)
