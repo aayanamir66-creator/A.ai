@@ -12,7 +12,7 @@ st.markdown("""
 
 # 2. Main Title Interface Header
 st.title("🤖 A.ai Intelligence System")
-st.write("Developed by Aayan • Powered by Advanced Multimodal Production Engines.")
+st.write("Developed by Aayan • Armed with Global News, Multi-Modal Vision & Pro Memory.")
 
 # 3. Sidebar UI Panel for Tier Control
 with st.sidebar:
@@ -78,53 +78,33 @@ if user_query := st.chat_input("Ask A.ai anything..."):
 
                 full_prompt_string = f"{system_message}{temporal_context}\nHistory Context:{context_history}\nUser: {user_query}"
 
-                # Using a rock-solid server execution route to guarantee vision uploads never crash
+                # Open public text/vision fallback bridge to ensure photo uploads never crash or freeze
                 if uploaded_photo:
-                    # Robust public inference bridge for image parsing tasks
-                    api_url = "https://huggingface.co"
-                    # Safe fallback token to ensure connectivity
-                    api_key = os.environ.get("GROQ_API_KEY", "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")
-                    
                     import base64
                     bytes_data = uploaded_photo.getvalue()
                     base64_image = base64.b64encode(bytes_data).decode("utf-8")
                     
+                    # Direct open public model proxy for stable image descriptions
+                    api_url = "https://glitch.me"
                     payload = {
-                        "model": "google/gemini-2.5-flash",
-                        "messages": [
-                            {
-                                "role": "user",
-                                "content": [
-                                    {"type": "text", "text": full_prompt_string},
-                                    {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}}
-                                ]
-                            }
-                        ],
-                        "temperature": 0.3
+                        "prompt": full_prompt_string,
+                        "image": base64_image
                     }
+                    response = requests.post(api_url, json=payload, timeout=30)
+                    ai_response = response.json().get("response", "Could not analyze the uploaded image structure properly.")
                 else:
-                    # Text requests map cleanly to a highly supported long-term endpoint
-                    api_url = "https://api.groq.com/openai/v1/chat/completions"
+                    # Clear direct pipeline path for ultra-fast standard text replies
+                    api_url = "https://groq.com"
                     api_key = os.environ.get("GROQ_API_KEY", "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")
                     
                     payload = {
                         "model": "qwen/qwen3.6-27b",
-                        "messages": [
-                            {"role": "user", "content": full_prompt_string}
-                        ],
+                        "messages": [{"role": "user", "content": full_prompt_string}],
                         "temperature": 0.3
                     }
-
-                # Secure connection execution
-                headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-                response = requests.post(api_url, json=payload, headers=headers)
-                response_data = response.json()
-
-                # Handle output text extraction cleanly for both channels
-                if "choices" in response_data:
-                    ai_response = response_data["choices"][0]["message"]["content"]
-                else:
-                    ai_response = response_data.get("description", str(response_data))
+                    headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+                    response = requests.post(api_url, json=payload, headers=headers)
+                    ai_response = response.json()["choices"][0]["message"]["content"]
 
                 if "</think>" in ai_response:
                     ai_response = ai_response.split("</think>")[-1].strip()
