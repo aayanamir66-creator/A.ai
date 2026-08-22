@@ -6,7 +6,7 @@ from groq import Groq
 st.set_page_config(page_title="A.ai", page_icon="🤖")
 
 st.title("🤖 A.ai Intelligence System")
-st.write("Developed by Aayan • Advanced ChatGPT-Style Engine Active.")
+st.write("Developed by Aayan • Advanced artificial intelligence for you.")
 
 # 2. Initialize Groq API Client Connection Safely
 if "GROQ_API_KEY" in os.environ:
