@@ -85,13 +85,12 @@ if user_query := st.chat_input("Ask A.ai anything..."):
                     for msg in st.session_state.messages[:-1]:  # Add history
                         api_messages.append({"role": msg["role"], "content": msg["content"]})
 
-                # If a photo is uploaded, we utilize the newer, active 90B Vision architecture model endpoint
+                # Select model endpoint
                 if uploaded_photo:
                     target_model_endpoint = "llama-3.2-90b-vision-preview"
                     bytes_data = uploaded_photo.getvalue()
                     base64_image = base64.b64encode(bytes_data).decode("utf-8")
                     
-                    # Content format for Vision API
                     user_content = [
                         {"type": "text", "text": user_query},
                         {
@@ -111,8 +110,16 @@ if user_query := st.chat_input("Ask A.ai anything..."):
                     temperature=0.3
                 )
                 
-                # Clean response parsing
-                ai_response = completion.choices.message.content
+                # Safe structure parsing block to handle raw objects and dictionary conversions
+                try:
+                    ai_response = completion.choices.message.content
+                except (TypeError, AttributeError, KeyError):
+                    if isinstance(completion, dict):
+                        ai_response = completion.get('choices', [{}])[0].get('message', {}).get('content', str(completion))
+                    elif hasattr(completion, 'choices') and isinstance(completion.choices, list):
+                        ai_response = completion.choices[0].message.content if hasattr(completion.choices[0], 'message') else str(completion.choices)
+                    else:
+                        ai_response = str(completion)
                 
                 if "</think>" in ai_response:
                     ai_response = ai_response.split("</think>")[-1].strip()
