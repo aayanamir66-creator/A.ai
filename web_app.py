@@ -85,9 +85,9 @@ if user_query := st.chat_input("Ask A.ai anything..."):
                     for msg in st.session_state.messages[:-1]:  # Add history
                         api_messages.append({"role": msg["role"], "content": msg["content"]})
 
-                # If a photo is uploaded, we format it as a valid data-URI for the Vision model
+                # If a photo is uploaded, we utilize the newer, active 90B Vision architecture model endpoint
                 if uploaded_photo:
-                    target_model_endpoint = "llama-3.2-11b-vision-preview"
+                    target_model_endpoint = "llama-3.2-90b-vision-preview"
                     bytes_data = uploaded_photo.getvalue()
                     base64_image = base64.b64encode(bytes_data).decode("utf-8")
                     
@@ -112,7 +112,7 @@ if user_query := st.chat_input("Ask A.ai anything..."):
                 )
                 
                 # Clean response parsing
-                ai_response = completion.choices[0].message.content
+                ai_response = completion.choices.message.content
                 
                 if "</think>" in ai_response:
                     ai_response = ai_response.split("</think>")[-1].strip()
