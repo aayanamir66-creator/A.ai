@@ -6,7 +6,7 @@ from groq import Groq
 st.set_page_config(page_title="A.ai", page_icon="🤖")
 
 st.title("🤖 A.ai Intelligence System")
-st.write("Developed by Aayan • Advanced Core Active with Continuous Session Memory.")
+st.write("Developed by Aayan • Advanced ChatGPT-Style Engine Active.")
 
 # 2. Initialize Groq API Client Connection Safely
 if "GROQ_API_KEY" in os.environ:
@@ -32,20 +32,22 @@ if user_query := st.chat_input("Ask A.ai anything..."):
 
     # Process response string generations via highly optimized model arrays
     with st.chat_message("assistant"):
-        with st.spinner("A.ai is generating comprehensive analysis..."):
+        with st.spinner("A.ai is generating response..."):
             try:
-                # Upgraded persona template prompt forcing advanced, deep, and highly intelligent reasoning
+                # Custom ChatGPT behavior persona block
                 system_message = (
-                    "Your name is A.ai. You are an all-knowing, highly intellectual, comprehensive AI assistant. "
+                    "Your name is A.ai. You are an all-knowing, highly intellectual AI assistant modeled after ChatGPT. "
                     "You were created and developed by Aayan. If asked who made you, reply proudly that Aayan made you. "
-                    "Provide highly advanced, deeply analytical, and professional responses. "
-                    "Do not give brief answers; provide rich context, background details, and structural breakdowns for every query."
+                    "CRITICAL RESPONSE RULE: If the user query is a simple greeting like 'hi', 'hello', 'hey', 'yo', or 'sup', "
+                    "you MUST answer with a short, friendly, polite response in exactly one single line (e.g., 'Hello! I'm A.ai, your intelligent assistant developed by Aayan. How can I help you today?'). "
+                    "For all actual informational questions, provide an advanced, highly structured, clear ChatGPT-style response "
+                    "using bold markdown headings, organized bullet points, clean spacing, and informative detailed paragraphs."
                 )
                 
                 # Dynamic Real-Time World Data Ingestion Parameter (August 2026 calibration)
                 temporal_context = (
                     "\n[Real-Time Server Notice: The current calendar date environment parameters are active for Saturday, August 22, 2026. "
-                    "Synthesize your deep world knowledge accurately incorporating current global events and structural world updates for August 2026.]"
+                    "Synthesize your world knowledge accurately incorporating current global events and structural world updates for August 2026.]"
                 )
 
                 # Feed whole context string history structures (Continuous Memory)
