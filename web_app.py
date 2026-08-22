@@ -75,24 +75,26 @@ if user_query := st.chat_input("Ask A.ai anything..."):
                 
                 # Robust extraction filter block that cleanly chops off the raw object trailing metadata string strings
                 if ", role='assistant'" in ai_response:
-                    ai_response = ai_response.split(", role='assistant'")[0]
+                    ai_response = ai_response.split(", role='assistant'")
                 if "', role=" in ai_response:
-                    ai_response = ai_response.split("', role=")[0]
+                    ai_response = ai_response.split("', role=")
                 if '", role=' in ai_response:
-                    ai_response = ai_response.split('", role=')[0]
+                    ai_response = ai_response.split('", role=')
                 if "content='" in ai_response:
                     ai_response = ai_response.split("content='")[-1]
                 if 'content="' in ai_response:
                     ai_response = ai_response.split('content="')[-1]
                 if "[Choice(finish_reason=" in ai_response:
-                    ai_response = ai_response.split("[Choice(finish_reason=")[0]
+                    ai_response = ai_response.split("[Choice(finish_reason=")
 
                 # Strip trailing syntax variables or punctuation artifacts safely
                 ai_response = ai_response.strip().rstrip("',").rstrip('",').strip()
                 
-                # Clean up reasoning token blockages if present
+                # ADVANCED CLEANER: Completely wipes out the raw <think> tags and everything inside them
                 if "</think>" in ai_response:
                     ai_response = ai_response.split("</think>")[-1].strip()
+                elif "<think>" in ai_response:
+                    ai_response = ai_response.split("<think>")[0].strip()
                 
                 ai_response = ai_response.replace('\\n', '\n').replace('\\"', '"').strip()
 
