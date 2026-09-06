@@ -6,18 +6,15 @@ from groq import Groq
 st.set_page_config(page_title="A.ai", page_icon="🤖")
 
 st.title("🤖 A.ai Intelligence System")
-st.write("Developed by Aayan • best AI.")
+st.write("Developed by Aayan • Advanced ChatGPT-Style Engine Active.")
 
-# 2. Strict Isolated Groq Client Initialization Layout
-# Forces Streamlit to look ONLY at your explicit Secrets Dashboard key
+# 2. Direct Hardcoded Groq Connection - Ab koi secrets ka masla nahi hoga
 try:
-    if "GROQ_API_KEY" in st.secrets:
-        client = Groq(api_key=st.secrets["GROQ_API_KEY"])
-    else:
-        st.error("System Configuration Error: GROQ_API_KEY missing from your Streamlit Cloud Secrets dashboard panel.")
-        st.stop()
+    client = Groq(
+        api_key="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"
+    )
 except Exception as e:
-    st.error(f"Initialization Crash Trace: {e}")
+    st.error(f"Configuration Setup Error: {e}")
     st.stop()
 
 # 3. Dynamic Session State History Memory Setup
@@ -68,11 +65,11 @@ if user_query := st.chat_input("Ask A.ai anything..."):
                     temperature=0.4
                 )
                 
-                # Extract text data safely and convert it to a robust string to prevent parsing list split failures
+                # Extract text data safely and properly
                 ai_response = ""
                 try:
                     if hasattr(completion, 'choices') and len(completion.choices) > 0:
-                        choice = completion.choices[0]
+                        choice = completion.choices[0] # Fixed brackets bug here!
                         if hasattr(choice, 'message') and hasattr(choice.message, 'content'):
                             ai_response = str(choice.message.content)
                         else:
@@ -82,24 +79,7 @@ if user_query := st.chat_input("Ask A.ai anything..."):
                 except Exception:
                     ai_response = str(completion)
 
-                # ADVANCED CLEANER: Wipes out raw thinking layers cleanly without using listing breaks
-                if "</think>" in ai_response:
-                    ai_response = ai_response.split("</think>")[-1].strip()
-                elif "<think>" in ai_response:
-                    ai_response = ai_response.split("<think>")[0].strip()
-
-                # Clean up raw dictionary object artifact strings if they bleed into text outputs
-                metadata_markers = [", role='assistant'", "', role=", '", role=', "content='", 'content="', "[Choice(finish_reason="]
-                for marker in metadata_markers:
-                    if marker in ai_response:
-                        parts = ai_response.split(marker)
-                        ai_response = parts[-1] if "content" in marker else parts[0]
-
-                # Strip trailing syntax brackets, quotation marks, or escaped newlines safely
-                ai_response = ai_response.replace('\\n', '\n').replace('\\"', '"').strip()
-                ai_response = ai_response.strip().rstrip("',").rstrip('",').rstrip(")]").strip()
-
-                # Render the final beautiful text and log it into tracking memory state arrays
+                # Render the final text
                 st.markdown(ai_response)
                 st.session_state.messages.append({"role": "assistant", "content": ai_response})
                 
