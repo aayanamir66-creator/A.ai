@@ -8,14 +8,16 @@ st.set_page_config(page_title="A.ai", page_icon="🤖")
 st.title("🤖 A.ai Intelligence System")
 st.write("Developed by Aayan • Advanced ChatGPT-Style Engine Active.")
 
-# 2. Correct Native Groq Connection Setup
-# This safely reads your single-line key directly from your Streamlit Secrets Dashboard
+# 2. Strict Isolated Groq Client Initialization Layout
+# Forces Streamlit to look ONLY at your explicit Secrets Dashboard key
 try:
-    client = Groq(
-        api_key=st.secrets["GROQ_API_KEY"]
-    )
+    if "GROQ_API_KEY" in st.secrets:
+        client = Groq(api_key=st.secrets["GROQ_API_KEY"])
+    else:
+        st.error("System Configuration Error: GROQ_API_KEY missing from your Streamlit Cloud Secrets dashboard panel.")
+        st.stop()
 except Exception as e:
-    st.error(f"Configuration Setup Error: Please verify your Streamlit Secrets Dashboard. Details: {e}")
+    st.error(f"Initialization Crash Trace: {e}")
     st.stop()
 
 # 3. Dynamic Session State History Memory Setup
