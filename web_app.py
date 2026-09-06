@@ -8,11 +8,10 @@ st.set_page_config(page_title="A.ai", page_icon="🤖")
 st.title("🤖 A.ai Intelligence System")
 st.write("Developed by Aayan • Advanced ChatGPT-Style Engine Active.")
 
-# 2. Force Explicit Connection to Groq's Production System Endpoints
-# This bypasses old background configurations completely
+# 2. Correct Native Groq Connection Setup
+# This safely reads your single-line key directly from your Streamlit Secrets Dashboard
 try:
     client = Groq(
-        base_url="https://groq.com",
         api_key=st.secrets["GROQ_API_KEY"]
     )
 except Exception as e:
@@ -49,10 +48,10 @@ if user_query := st.chat_input("Ask A.ai anything..."):
                     "using bold markdown headings, organized bullet points, clean spacing, and informative detailed paragraphs."
                 )
                 
-                # Dynamic Real-Time World Data Ingestion Parameter (August 2026 calibration)
+                # Dynamic Real-Time World Data Ingestion Parameter (September 2026 calibration)
                 temporal_context = (
-                    "\n[Real-Time Server Notice: The current calendar date environment parameters are active for Saturday, August 22, 2026. "
-                    "Synthesize your world knowledge accurately incorporating current global events and structural world updates for August 2026.]"
+                    "\n[Real-Time Server Notice: The current calendar date environment parameters are active for Sunday, September 6, 2026. "
+                    "Synthesize your world knowledge accurately incorporating current global events and structural world updates for September 2026.]"
                 )
 
                 # Feed whole context string history structures (Continuous Memory)
