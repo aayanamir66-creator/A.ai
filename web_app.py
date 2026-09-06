@@ -8,11 +8,16 @@ st.set_page_config(page_title="A.ai", page_icon="🤖")
 st.title("🤖 A.ai Intelligence System")
 st.write("Developed by Aayan • Advanced ChatGPT-Style Engine Active.")
 
-# 2. Initialize Groq API Client Connection Safely
+# 2. Initialize Groq API Client Connection Safely using Streamlit Secrets
+# This protects your key from being stolen on public GitHub repositories
 if "GROQ_API_KEY" in os.environ:
     client = Groq()
 else:
-    client = Groq(api_key="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")
+    try:
+        client = Groq(api_key=st.secrets["GROQ_API_KEY"])
+    except Exception:
+        st.error("Missing API Key! Please configure GROQ_API_KEY inside your Streamlit Cloud Secrets dashboard.")
+        st.stop()
 
 # 3. Dynamic Session State History Memory Setup
 if "messages" not in st.session_state:
@@ -55,9 +60,10 @@ if user_query := st.chat_input("Ask A.ai anything..."):
                 for msg in st.session_state.messages:
                     api_messages.append({"role": msg["role"], "content": msg["content"]})
 
-                # Direct execution request call to production endpoints
+                # Direct execution request call to production Groq endpoints
+                # Switched to the official production-supported Llama 3.3 model
                 completion = client.chat.completions.create(
-                    model="qwen/qwen3.6-27b",
+                    model="llama-3.3-70b-versatile",
                     messages=api_messages,
                     temperature=0.4
                 )
